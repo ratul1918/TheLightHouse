@@ -17,10 +17,10 @@ MonoBehaviour:
   text: (shallow ragged breath)
   actingDirection: Short ragged gasps
   context: Stamina < 20% recovery phase
-  clip: {fileID: 0}
+  clip: {fileID: 8300000, guid: 76ffb7350c59649f2970b7fd14fbbbf7, type: 3}
   audioType: 6
   spatialMode: 0
   priority: 0
   interruptible: 1
   subtitleOverrideDuration: 2
-  isPlaceholder: 1
+  isPlaceholder: 0

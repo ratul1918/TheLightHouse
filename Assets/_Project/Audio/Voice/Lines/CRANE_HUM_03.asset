@@ -17,10 +17,10 @@ MonoBehaviour:
   text: (nearby, Crane hums a lullaby)
   actingDirection: Faint sea shanty vibration through masonry
   context: Floor 2 and 3 patrol
-  clip: {fileID: 0}
+  clip: {fileID: 8300000, guid: b52a9e3ab8b8341948552b6658d05e6e, type: 3}
   audioType: 3
   spatialMode: 1
   priority: 50
   interruptible: 1
   subtitleOverrideDuration: 4.2
-  isPlaceholder: 1
+  isPlaceholder: 0

@@ -9,8 +9,10 @@ namespace TheLightHouse
         [SerializeField] bool enableSceneChaining;
         [SerializeField] string act1Scene="Act1",act2Scene="Act2",act3Scene="Act3",act4Scene="Act4",act5Scene="Act5";
         [SerializeField,Min(0f)] float transitionReleaseDelay=.1f;
+        [SerializeField, Min(0f)] float continueCloudWait = 2f;
         SaveSystem saves;
         bool transitioning;
+        bool continuing;
         void Awake(){var existing=FindObjectsByType<ActFlowController>();if(existing.Length>1){Destroy(gameObject);return;}DontDestroyOnLoad(gameObject);saves=GetComponent<SaveSystem>()??gameObject.AddComponent<SaveSystem>();}
         void OnEnable(){GameEvents.StoryBeatTriggered+=Beat;SceneManager.sceneLoaded+=Loaded;}
         void OnDisable(){GameEvents.StoryBeatTriggered-=Beat;SceneManager.sceneLoaded-=Loaded;}
@@ -22,7 +24,46 @@ namespace TheLightHouse
             if(string.IsNullOrEmpty(next))return;saves.Save();BeginTransition(next);
         }
         public void StartNew(){saves.NewGame();FindAnyObjectByType<RunTracker>()?.StartRun();BeginTransition(act1Scene);}
-        public void Continue(){if(saves.Load())BeginTransition(string.IsNullOrEmpty(saves.Data.act)?act1Scene:saves.Data.act);else StartNew();}
+        public void Continue()
+        {
+            if (continuing || transitioning) return;
+            if (saves == null) saves = GetComponent<SaveSystem>() ?? gameObject.AddComponent<SaveSystem>();
+            StartCoroutine(ContinueRoutine());
+        }
+
+        IEnumerator ContinueRoutine()
+        {
+            continuing = true;
+            LoadingScreenUI.Instance?.Show(0.1f);
+            bool syncDone = false;
+            bool loadSuccess = false;
+            bool timedOut = false;
+
+            bool localLoaded = saves.LoadWithCloudSync(success =>
+            {
+                loadSuccess = success;
+                syncDone = true;
+            }, () => timedOut);
+
+            float waitTimeout = continueCloudWait;
+            while (!syncDone && waitTimeout > 0f)
+            {
+                waitTimeout -= Time.unscaledDeltaTime;
+                yield return null;
+            }
+
+            timedOut = !syncDone;
+            continuing = false;
+            if (timedOut ? localLoaded : loadSuccess)
+            {
+                string targetAct = string.IsNullOrEmpty(saves.Data.act) ? act1Scene : saves.Data.act;
+                BeginTransition(targetAct);
+            }
+            else
+            {
+                StartNew();
+            }
+        }
         public void SkipToAct(int act){string[] scenes={act1Scene,act2Scene,act3Scene,act4Scene,act5Scene};BeginTransition(scenes[Mathf.Clamp(act-1,0,scenes.Length-1)]);}
         public void ApplyOptions(GameOptionsData options)=>saves?.SetOptions(options);
         void BeginTransition(string sceneName){if(!transitioning)StartCoroutine(Transition(sceneName));}

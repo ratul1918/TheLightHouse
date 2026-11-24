@@ -13,7 +13,27 @@ namespace TheLightHouse
         [SerializeField] float approachDistance=1.5f;
         [SerializeField] float alertLoudness=18;
         float nextSinging;float until;float initialDistance;bool active;
-        void Awake(){var source=GetComponent<AudioSource>();source.spatialBlend=1;source.playOnAwake=false;}
+        void Awake()
+        {
+            var source = GetComponent<AudioSource>();
+            if (source)
+            {
+                source.spatialBlend = 1f;
+                source.minDistance = 3f;
+                source.maxDistance = 35f;
+                source.rolloffMode = AudioRolloffMode.Logarithmic;
+                source.playOnAwake = false;
+            }
+            if (!singing)
+            {
+                singing = Resources.Load<AudioClip>("Audio/DROWNED_LURE_SUNG")
+                       ?? Resources.Load<AudioClip>("DROWNED_LURE_SUNG");
+#if UNITY_EDITOR
+                if (!singing)
+                    singing = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/_Project/Audio/Voice/TheDrowned/DROWNED_LURE_SUNG.wav");
+#endif
+            }
+        }
         void OnEnable()=>GameEvents.StoryBeatTriggered+=Beat;
         void OnDisable()=>GameEvents.StoryBeatTriggered-=Beat;
         void Beat(StoryBeatTriggeredEvent e){if(e.Id=="A2-B04"){active=true;nextSinging=Time.time+interval;}}

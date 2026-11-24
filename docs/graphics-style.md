@@ -48,4 +48,6 @@ Total runtime texture memory remains strictly budgeted under 105 MB.
 
 ## Asset Budget Conformance
 
+Dynamic TextMesh Pro font assets must retain a serialized atlas texture and material as subassets, including when their glyph tables are empty. Keep font asset GUIDs stable when repairing them, and verify the player build completes without font preprocessing exceptions. Cinzel uses a 1024×1024 dynamic atlas.
+
 The automated `AssetBudgetChecker` (`TheLightHouse/Check Asset Budget`) scans all models, textures, audio clips, and scenes against the M3 8 GB budget. Result: **PASS — no imported assets exceed the configured budget.**

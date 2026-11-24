@@ -17,10 +17,10 @@ MonoBehaviour:
   text: (wheezing exhale)
   actingDirection: Deep shaky exhalation
   context: Stamina fully depleted exhaustion
-  clip: {fileID: 0}
+  clip: {fileID: 8300000, guid: ef8c4c2340b2c4e57ac3069a2a133192, type: 3}
   audioType: 6
   spatialMode: 0
   priority: 0
   interruptible: 1
   subtitleOverrideDuration: 2.5
-  isPlaceholder: 1
+  isPlaceholder: 0

@@ -62,12 +62,22 @@ namespace TheLightHouse
         private float verticalVelocity;
         private float pitch;
         private float lookSensitivityMultiplier=1f;
+        private bool invertY;
         private FirstPersonArms arms;
         public float MoveSpeedMultiplier { get; set; } = 1f;
+        public float LookSensitivityMultiplier => lookSensitivityMultiplier;
+        public bool InvertY => invertY;
         public FirstPersonArms Arms => arms;
         public FlashlightController Flashlight => flashlight;
         public FPVFlashlightHandsController FpvHands => GetComponentInChildren<FPVFlashlightHandsController>();
-        public void ApplyOptions(float sensitivityMultiplier,bool disableBobAndFov){lookSensitivityMultiplier=Mathf.Max(.01f,sensitivityMultiplier);settings.disableBobAndFov=disableBobAndFov;}
+        public void ApplyOptions(float sensitivityMultiplier,bool disableBobAndFov,bool invert=false)
+        {
+            lookSensitivityMultiplier=Mathf.Max(.01f,sensitivityMultiplier);
+            if (!settings) settings = Resources.Load<PlayerMovementSettings>("PlayerMovementSettings");
+            if (!settings) settings = ScriptableObject.CreateInstance<PlayerMovementSettings>();
+            settings.disableBobAndFov=disableBobAndFov;
+            invertY=invert;
+        }
         public bool MovementEnabled
         {
             get => movementEnabled;
@@ -80,6 +90,7 @@ namespace TheLightHouse
 
         private void Awake()
         {
+            if (Time.timeScale <= 0f) Time.timeScale = 1.0f;
             characterController = GetComponent<CharacterController>();
             if (cameraTransform) pitch = Mathf.DeltaAngle(0f, cameraTransform.localEulerAngles.x);
             noiseEmitter ??= GetComponent<NoiseEmitter>();
@@ -101,11 +112,27 @@ namespace TheLightHouse
             Ensure<StaminaBar>();
             if (cameraTransform && cameraTransform.TryGetComponent<Camera>(out var viewCamera))
                 viewCamera.nearClipPlane = settings.cameraNearClip;
+            characterController.radius = settings.capsuleRadius;
+            characterController.minMoveDistance = 0f;
             characterController.slopeLimit = settings.slopeLimit;
             characterController.skinWidth = settings.skinWidth;
             arms = GetComponentInChildren<FirstPersonArms>();
             flashlight = EnsureFlashlight();
             ResolveActions();
+        }
+
+        private void Start()
+        {
+            var settingsMgr = GameSettingsManager.Instance;
+            if (settingsMgr != null && settingsMgr.CurrentOptions != null)
+            {
+                var opt = settingsMgr.CurrentOptions;
+                ApplyOptions(opt.sensitivity, opt.disableBobAndFov || !opt.cameraBob || opt.motionSicknessReduction, opt.invertY);
+            }
+            if (inputActions != null)
+            {
+                InputRebindManager.LoadOverrides(inputActions);
+            }
         }
 
         private FlashlightController EnsureFlashlight()
@@ -201,7 +228,8 @@ namespace TheLightHouse
         private void UpdateLook()
         {
             Vector2 lookInput = lookLocked ? Vector2.zero : lookAction.ReadValue<Vector2>() * settings.lookSensitivity * lookSensitivityMultiplier;
-            pitch = Mathf.Clamp(pitch - lookInput.y, settings.minimumPitch, settings.maximumPitch);
+            float yDelta = invertY ? lookInput.y : -lookInput.y;
+            pitch = Mathf.Clamp(pitch + yDelta, settings.minimumPitch, settings.maximumPitch);
             if (peekPitchLimit > 0f) pitch = Mathf.Clamp(pitch, -peekPitchLimit, peekPitchLimit);
             if (peekYawLimit > 0f)
             {
@@ -263,6 +291,8 @@ namespace TheLightHouse
             characterController.stepOffset = groundBefore ? Mathf.Min(settings.stepOffset, characterController.height) : 0f;
             Vector3 previousPosition = transform.position;
             CollisionFlags flags = characterController.Move((horizontalVelocity + Vector3.up * verticalVelocity) * dt);
+            if (groundBefore && verticalVelocity <= 0f && (flags & CollisionFlags.Below) == 0)
+                flags |= ControllerGrounding.Snap(characterController, settings);
             if ((flags & CollisionFlags.Above) != 0 && verticalVelocity > 0f) verticalVelocity = 0f;
             Grounded = verticalVelocity <= 0f && ((flags & CollisionFlags.Below) != 0 || ProbeGround(out groundHit));
             if (Grounded) surface.Detect(groundHit, settings);
@@ -296,15 +326,7 @@ namespace TheLightHouse
             }
         }
 
-        private bool ProbeGround(out RaycastHit hit)
-        {
-            float radius = Mathf.Max(settings.groundProbeInset, characterController.radius - settings.groundProbeInset);
-            Vector3 origin = transform.position + Vector3.up * (characterController.radius + settings.groundProbeInset);
-            if (!Physics.SphereCast(origin, radius, Vector3.down, out hit,
-                settings.groundProbeDistance + settings.groundProbeInset * 2f,
-                Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore)) return false;
-            return Vector3.Angle(hit.normal, Vector3.up) <= settings.slopeLimit;
-        }
+        private bool ProbeGround(out RaycastHit hit) => ControllerGrounding.Probe(characterController, settings, out hit);
 
         private void UpdateCrouch(bool requested)
         {

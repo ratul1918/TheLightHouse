@@ -22,7 +22,7 @@ namespace TheLightHouse
 
         void CreateLayer(Transform anchor)
         {
-            var layer=new GameObject("Fog Layer",typeof(ParticleSystem),typeof(ParticleSystemRenderer));layer.transform.SetParent(anchor,false);
+            var layer=new GameObject("Fog Layer",typeof(ParticleSystem));layer.transform.SetParent(anchor,false);
             var particles=layer.GetComponent<ParticleSystem>();var main=particles.main;main.loop=true;main.startLifetime=lifetime;main.startSpeed=scrollSpeed;main.startSize3D=true;main.startSizeX=new ParticleSystem.MinMaxCurve(particleSizeRange.x,particleSizeRange.y);main.startSizeY=new ParticleSystem.MinMaxCurve(particleSizeRange.x*.35f,particleSizeRange.y*.35f);main.startColor=new Color(1f,1f,1f,opacity);main.maxParticles=particlesPerLayer;
             var emission=particles.emission;emission.rateOverTime=particlesPerLayer/lifetime;
             var shape=particles.shape;shape.shapeType=ParticleSystemShapeType.Box;shape.scale=new Vector3(layerWidth,layerHeight,.5f);

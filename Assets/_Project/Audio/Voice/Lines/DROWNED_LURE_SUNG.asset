@@ -17,10 +17,10 @@ MonoBehaviour:
   text: (haunting siren lullaby echoing across the breakers)
   actingDirection: Eerie harmonic singing across water
   context: Singing lure near shoreline
-  clip: {fileID: 0}
+  clip: {fileID: 8300000, guid: e2fccc474759c417c92a80125adda863, type: 3}
   audioType: 4
   spatialMode: 1
   priority: 50
   interruptible: 1
   subtitleOverrideDuration: 6
-  isPlaceholder: 1
+  isPlaceholder: 0

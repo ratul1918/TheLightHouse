@@ -17,10 +17,10 @@ MonoBehaviour:
   text: (shuddering inhale, holding breath)
   actingDirection: Suppressed breath, muffled tension
   context: Crouched inside HidingSpot near Stalker
-  clip: {fileID: 0}
+  clip: {fileID: 8300000, guid: 1085fbcfdda4d435b96a93b542776da0, type: 3}
   audioType: 6
   spatialMode: 0
   priority: 0
   interruptible: 1
   subtitleOverrideDuration: 3
-  isPlaceholder: 1
+  isPlaceholder: 0

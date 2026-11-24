@@ -15,7 +15,6 @@ namespace TheLightHouse.Editor
         const string RootName = "[Graphics 1]";
         const string SettingsFolder = "Assets/_Project/Settings";
         const string MaterialFolder = "Assets/_Project/Materials/Graphics1";
-        const string MoodScene = "Assets/_Project/Scenes/MoodTest.unity";
         static readonly string[] ActScenes = {
             "Assets/_Project/Scenes/Act1.unity",
             "Assets/_Project/Scenes/Act2.unity",
@@ -36,11 +35,10 @@ namespace TheLightHouse.Editor
             Sprite glow = CreateGlowSprite();
             foreach (string path in ActScenes)
                 if (File.Exists(path)) ApplyToScene(path, settings, profiles, fogMaterial, beamMaterial, cone, glow);
-            BuildMoodTest(settings, profiles, fogMaterial, beamMaterial, cone, glow);
             ConfigureLightmapping();
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
-            Debug.Log("Graphics 1 applied to Acts 1-5 and MoodTest with realistic maritime horror atmosphere and soft shadows.");
+            Debug.Log("Graphics 1 applied to Acts 1-5 with realistic maritime horror atmosphere and soft shadows.");
         }
 
         static void EnsureFolders()
@@ -56,13 +54,13 @@ namespace TheLightHouse.Editor
             PlayerSettings.SetUseDefaultGraphicsAPIs(BuildTarget.StandaloneOSX, false);
             PlayerSettings.SetGraphicsAPIs(BuildTarget.StandaloneOSX, new[] { GraphicsDeviceType.Metal });
             var source = AssetDatabase.LoadAssetAtPath<UniversalRenderPipelineAsset>("Assets/Settings/PC_RPAsset.asset");
-            var mac = ClonePipeline(source, SettingsFolder + "/URP_Mac.asset", 1f, 64f, 8);
-            var low = ClonePipeline(source, SettingsFolder + "/URP_Low.asset", .75f, 32f, 4);
+            var mac = ClonePipeline(source, SettingsFolder + "/URP_Mac.asset", 1f, 40f, 8);
+            var low = ClonePipeline(source, SettingsFolder + "/URP_Low.asset", .75f, 30f, 4);
             Object qualityAsset = AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/QualitySettings.asset")[0];
             var quality = new SerializedObject(qualityAsset);
             SerializedProperty levels = quality.FindProperty("m_QualitySettings");
-            int macIndex = EnsureQuality(levels, "Mac", mac, 8, 64f);
-            EnsureQuality(levels, "Low", low, 4, 32f);
+            int macIndex = EnsureQuality(levels, "Mac", mac, 8, 40f);
+            EnsureQuality(levels, "Low", low, 4, 30f);
             quality.FindProperty("m_CurrentQuality").intValue = macIndex;
             quality.ApplyModifiedPropertiesWithoutUndo();
         }
@@ -80,13 +78,13 @@ namespace TheLightHouse.Editor
             Set(serialized, "m_RenderScale", renderScale);
             Set(serialized, "m_SupportsHDR", true);
             Set(serialized, "m_ShadowDistance", shadowDistance);
-            Set(serialized, "m_ShadowCascadeCount", 4);
+            Set(serialized, "m_ShadowCascadeCount", 1);
             Set(serialized, "m_SoftShadowsSupported", true);
             Set(serialized, "m_AdditionalLightsPerObjectLimit", lightLimit);
             Set(serialized, "m_AdditionalLightShadowsSupported", true);
             Set(serialized, "m_MainLightShadowmapResolution", 2048);
             Set(serialized, "m_AdditionalLightsShadowmapResolution", 1024);
-            Set(serialized, "m_MSAA", 4);
+            Set(serialized, "m_MSAA", 1);
             serialized.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(asset);
             return asset;
@@ -103,9 +101,9 @@ namespace TheLightHouse.Editor
             level.FindPropertyRelative("pixelLightCount").intValue = pixelLights;
             level.FindPropertyRelative("shadows").intValue = 2; // All shadows
             level.FindPropertyRelative("shadowResolution").intValue = 2; // High
-            level.FindPropertyRelative("shadowCascades").intValue = 2; // 4 cascades
+            level.FindPropertyRelative("shadowCascades").intValue = 1; // 1 cascade
             level.FindPropertyRelative("shadowDistance").floatValue = shadowDistance;
-            level.FindPropertyRelative("antiAliasing").intValue = 4;
+            level.FindPropertyRelative("antiAliasing").intValue = 0; // MSAA Off (camera SMAA active)
             level.FindPropertyRelative("realtimeReflectionProbes").boolValue = false;
             level.FindPropertyRelative("customRenderPipeline").objectReferenceValue = pipeline;
             return index;
@@ -344,31 +342,6 @@ namespace TheLightHouse.Editor
             LightmapEditorSettings.maxAtlasSize = 1024;
             LightmapEditorSettings.padding = 2;
 #pragma warning restore 618
-        }
-
-        static void BuildMoodTest(AtmosphereSettings settings, VolumeProfile[] profiles, Material fogMaterial, Material beamMaterial, Mesh cone, Sprite glow)
-        {
-            Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
-            Cube("Ground", new(0, -.25f, 0), new(35, .5f, 35));
-            Cube("Tower", new(0, 4, 4), new(10, 8, 10));
-            Cube("Dock", new(0, .1f, -13), new(5, .3f, 14));
-            var figure = Cube("Figure Silhouette", new(5, 1, -11), new(.7f, 2.2f, .5f));
-            var renderer = figure.GetComponent<Renderer>();
-            var silhouette = CreateMaterial(MaterialFolder + "/Silhouette.mat", "Universal Render Pipeline/Lit", new Color(.015f, .02f, .025f));
-            renderer.sharedMaterial = silhouette;
-            var cameraObject = new GameObject("Mood Camera", typeof(Camera));
-            cameraObject.tag = "MainCamera";
-            cameraObject.transform.position = new(13, 7, -20);
-            cameraObject.transform.LookAt(new Vector3(0, 3, 0));
-            var sunObject = new GameObject("Dusk Sun", typeof(Light));
-            var sun = sunObject.GetComponent<Light>();
-            sun.type = LightType.Directional;
-            sun.transform.rotation = Quaternion.Euler(28, -35, 0);
-            var lampObject = new GameObject("Lamp", typeof(Light), typeof(LampController));
-            lampObject.transform.position = new(0, 7, 4);
-            ApplyToOpenScene(settings, profiles, fogMaterial, beamMaterial, cone, glow, true);
-            ConfigureLightmapping();
-            EditorSceneManager.SaveScene(scene, MoodScene);
         }
 
         static GameObject Cube(string name, Vector3 position, Vector3 scale)
