@@ -17,10 +17,10 @@ MonoBehaviour:
   text: (Crane hums a broken lullaby)
   actingDirection: Wavering pitch, struggling to stay lucid
   context: Stalker hunting search loop
-  clip: {fileID: 0}
+  clip: {fileID: 8300000, guid: 1302e20f89a184ce5a36b828e23d49e8, type: 3}
   audioType: 3
   spatialMode: 1
   priority: 50
   interruptible: 1
   subtitleOverrideDuration: 4
-  isPlaceholder: 1
+  isPlaceholder: 0

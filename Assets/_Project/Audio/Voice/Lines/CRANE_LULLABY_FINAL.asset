@@ -17,10 +17,10 @@ MonoBehaviour:
   text: Time for us to leave her...
   actingDirection: Rasping, emotional clarity before sinking
   context: Shoreline final sacrifice
-  clip: {fileID: 0}
+  clip: {fileID: 8300000, guid: 6d4901ba5ea624e558a41b1b52fa5e53, type: 3}
   audioType: 4
   spatialMode: 1
   priority: 100
   interruptible: 0
   subtitleOverrideDuration: 5
-  isPlaceholder: 1
+  isPlaceholder: 0

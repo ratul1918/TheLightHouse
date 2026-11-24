@@ -38,7 +38,7 @@ namespace TheLightHouse
                     player.transform.rotation = Quaternion.RotateTowards(player.transform.rotation, Quaternion.LookRotation(direction), turnSpeed * Time.deltaTime);
                 yield return null;
             }
-            var deathUI = FindAnyObjectByType<DeathScreenUI>();
+            var deathUI = DeathScreenUI.EnsureInstance();
             if (deathUI) deathUI.ShowDeath();
             else { player.Respawn(); fade = 0; active = false; }
         }

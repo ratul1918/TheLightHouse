@@ -17,10 +17,10 @@ MonoBehaviour:
   text: (strained physical exertion grunt)
   actingDirection: Heavy rhythmic grunting against iron gears
   context: Hand-cranking the beacon generator
-  clip: {fileID: 0}
+  clip: {fileID: 8300000, guid: cedecc87a82c94e81b1f6d987aad74ff, type: 3}
   audioType: 6
   spatialMode: 0
   priority: 0
   interruptible: 1
   subtitleOverrideDuration: 1.8
-  isPlaceholder: 1
+  isPlaceholder: 0

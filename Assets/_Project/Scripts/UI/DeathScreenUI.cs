@@ -24,14 +24,83 @@ namespace TheLightHouse
             "\"The lighthouse was never a guide. It was a leash.\""
         };
 
+        public static DeathScreenUI EnsureInstance()
+        {
+            var existing = FindAnyObjectByType<DeathScreenUI>();
+            if (existing) return existing;
+            var canvas = FindAnyObjectByType<Canvas>();
+            if (!canvas) return null;
+            var go = new GameObject("Death Screen UI", typeof(RectTransform));
+            go.transform.SetParent(canvas.transform, false);
+            return go.AddComponent<DeathScreenUI>();
+        }
+
         private void Awake()
         {
+            if (!panel) BuildDefaultUI();
             if (panel) panel.SetActive(false);
             if (canvasGroup) canvasGroup.alpha = 0f;
 
             if (retryButton) retryButton.onClick.AddListener(OnRetry);
             if (loadButton) loadButton.onClick.AddListener(OnLoad);
             if (mainMenuButton) mainMenuButton.onClick.AddListener(OnMainMenu);
+        }
+
+        private void BuildDefaultUI()
+        {
+            var rect = GetComponent<RectTransform>() ?? gameObject.AddComponent<RectTransform>();
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.offsetMin = rect.offsetMax = Vector2.zero;
+
+            panel = gameObject;
+            canvasGroup = GetComponent<CanvasGroup>() ?? gameObject.AddComponent<CanvasGroup>();
+
+            var bgImg = GetComponent<Image>() ?? gameObject.AddComponent<Image>();
+            bgImg.color = new Color(0.02f, 0.03f, 0.04f, 0.95f);
+
+            var quoteObj = new GameObject("QuoteText", typeof(RectTransform), typeof(Text));
+            quoteObj.transform.SetParent(transform, false);
+            var quoteRect = quoteObj.GetComponent<RectTransform>();
+            quoteRect.anchorMin = new Vector2(0.2f, 0.5f);
+            quoteRect.anchorMax = new Vector2(0.8f, 0.75f);
+            quoteRect.offsetMin = quoteRect.offsetMax = Vector2.zero;
+            quoteText = quoteObj.GetComponent<Text>();
+            quoteText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            quoteText.fontSize = 24;
+            quoteText.fontStyle = FontStyle.Italic;
+            quoteText.alignment = TextAnchor.MiddleCenter;
+            quoteText.color = new Color(0.85f, 0.88f, 0.92f);
+
+            retryButton = CreateButton("RetryButton", "RETRY CHECKPOINT", new Vector2(0.35f, 0.35f), new Vector2(0.65f, 0.43f));
+            mainMenuButton = CreateButton("MainMenuButton", "MAIN MENU", new Vector2(0.35f, 0.24f), new Vector2(0.65f, 0.32f));
+        }
+
+        private Button CreateButton(string name, string label, Vector2 min, Vector2 max)
+        {
+            var btnObj = new GameObject(name, typeof(RectTransform), typeof(Image), typeof(Button));
+            btnObj.transform.SetParent(transform, false);
+            var rect = btnObj.GetComponent<RectTransform>();
+            rect.anchorMin = min;
+            rect.anchorMax = max;
+            rect.offsetMin = rect.offsetMax = Vector2.zero;
+            var img = btnObj.GetComponent<Image>();
+            img.color = new Color(0.18f, 0.22f, 0.25f, 0.9f);
+
+            var txtObj = new GameObject("Label", typeof(RectTransform), typeof(Text));
+            txtObj.transform.SetParent(btnObj.transform, false);
+            var txtRect = txtObj.GetComponent<RectTransform>();
+            txtRect.anchorMin = Vector2.zero;
+            txtRect.anchorMax = Vector2.one;
+            txtRect.offsetMin = txtRect.offsetMax = Vector2.zero;
+            var txt = txtObj.GetComponent<Text>();
+            txt.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            txt.fontSize = 20;
+            txt.alignment = TextAnchor.MiddleCenter;
+            txt.color = Color.white;
+            txt.text = label;
+
+            return btnObj.GetComponent<Button>();
         }
 
         public void ShowDeath()

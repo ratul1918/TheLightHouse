@@ -54,13 +54,13 @@ namespace TheLightHouse.Editor
             PlayerSettings.SetUseDefaultGraphicsAPIs(BuildTarget.StandaloneOSX, false);
             PlayerSettings.SetGraphicsAPIs(BuildTarget.StandaloneOSX, new[] { GraphicsDeviceType.Metal });
             var source = AssetDatabase.LoadAssetAtPath<UniversalRenderPipelineAsset>("Assets/Settings/PC_RPAsset.asset");
-            var mac = ClonePipeline(source, SettingsFolder + "/URP_Mac.asset", 1f, 64f, 8);
-            var low = ClonePipeline(source, SettingsFolder + "/URP_Low.asset", .75f, 32f, 4);
+            var mac = ClonePipeline(source, SettingsFolder + "/URP_Mac.asset", 1f, 40f, 8);
+            var low = ClonePipeline(source, SettingsFolder + "/URP_Low.asset", .75f, 30f, 4);
             Object qualityAsset = AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/QualitySettings.asset")[0];
             var quality = new SerializedObject(qualityAsset);
             SerializedProperty levels = quality.FindProperty("m_QualitySettings");
-            int macIndex = EnsureQuality(levels, "Mac", mac, 8, 64f);
-            EnsureQuality(levels, "Low", low, 4, 32f);
+            int macIndex = EnsureQuality(levels, "Mac", mac, 8, 40f);
+            EnsureQuality(levels, "Low", low, 4, 30f);
             quality.FindProperty("m_CurrentQuality").intValue = macIndex;
             quality.ApplyModifiedPropertiesWithoutUndo();
         }
@@ -78,13 +78,13 @@ namespace TheLightHouse.Editor
             Set(serialized, "m_RenderScale", renderScale);
             Set(serialized, "m_SupportsHDR", true);
             Set(serialized, "m_ShadowDistance", shadowDistance);
-            Set(serialized, "m_ShadowCascadeCount", 4);
+            Set(serialized, "m_ShadowCascadeCount", 1);
             Set(serialized, "m_SoftShadowsSupported", true);
             Set(serialized, "m_AdditionalLightsPerObjectLimit", lightLimit);
             Set(serialized, "m_AdditionalLightShadowsSupported", true);
             Set(serialized, "m_MainLightShadowmapResolution", 2048);
             Set(serialized, "m_AdditionalLightsShadowmapResolution", 1024);
-            Set(serialized, "m_MSAA", 4);
+            Set(serialized, "m_MSAA", 1);
             serialized.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(asset);
             return asset;
@@ -101,9 +101,9 @@ namespace TheLightHouse.Editor
             level.FindPropertyRelative("pixelLightCount").intValue = pixelLights;
             level.FindPropertyRelative("shadows").intValue = 2; // All shadows
             level.FindPropertyRelative("shadowResolution").intValue = 2; // High
-            level.FindPropertyRelative("shadowCascades").intValue = 2; // 4 cascades
+            level.FindPropertyRelative("shadowCascades").intValue = 1; // 1 cascade
             level.FindPropertyRelative("shadowDistance").floatValue = shadowDistance;
-            level.FindPropertyRelative("antiAliasing").intValue = 4;
+            level.FindPropertyRelative("antiAliasing").intValue = 0; // MSAA Off (camera SMAA active)
             level.FindPropertyRelative("realtimeReflectionProbes").boolValue = false;
             level.FindPropertyRelative("customRenderPipeline").objectReferenceValue = pipeline;
             return index;

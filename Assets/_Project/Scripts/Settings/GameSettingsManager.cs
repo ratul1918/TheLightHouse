@@ -57,8 +57,10 @@ namespace TheLightHouse
 
             if (!gameAudioMixer)
             {
+                gameAudioMixer = Resources.Load<AudioMixer>("GameAudioMixer");
 #if UNITY_EDITOR
-                gameAudioMixer = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioMixer>("Assets/_Project/Audio/Mixers/GameAudioMixer.mixer");
+                if (!gameAudioMixer)
+                    gameAudioMixer = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioMixer>("Assets/_Project/Resources/GameAudioMixer.mixer");
 #endif
             }
 
@@ -87,11 +89,22 @@ namespace TheLightHouse
                 urp.renderScale = Mathf.Clamp(options.renderScale, 0.7f, 1.0f);
             }
 
+            // Camera FOV & Brightness
+            var cams = FindObjectsByType<Camera>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            foreach (var cam in cams)
+            {
+                cam.fieldOfView = options.fov;
+            }
+            RenderSettings.ambientLight = Color.white * Mathf.Clamp(options.brightness, 0.2f, 2.0f);
+
             // Player / Camera options
             var controller = FindAnyObjectByType<FirstPersonController>();
             if (controller)
             {
-                controller.ApplyOptions(options.sensitivity, options.disableBobAndFov);
+                controller.ApplyOptions(
+                    options.sensitivity,
+                    options.disableBobAndFov || !options.cameraBob || options.motionSicknessReduction,
+                    options.invertY);
             }
 
             // Accessibility
@@ -109,11 +122,23 @@ namespace TheLightHouse
                 hudSettings.SetSubtitleScale(options.subtitleSize);
                 subtitles.ApplySettings(hudSettings);
             }
+
+            // Input binding overrides
+            var inputAsset = Resources.Load<UnityEngine.InputSystem.InputActionAsset>("InputSystem_Actions");
+            if (inputAsset)
+            {
+                InputRebindManager.LoadOverrides(inputAsset);
+            }
         }
 
         public void ResetToDefaults()
         {
             currentOptions = new GameOptionsData();
+            var inputAsset = Resources.Load<UnityEngine.InputSystem.InputActionAsset>("InputSystem_Actions");
+            if (inputAsset)
+            {
+                InputRebindManager.ResetAllBindings(inputAsset);
+            }
             ApplyAll(currentOptions);
             SaveToPrefs();
             OptionsChanged?.Invoke(currentOptions);

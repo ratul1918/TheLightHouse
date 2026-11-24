@@ -3,7 +3,7 @@ using UnityEngine.AI;
 
 namespace TheLightHouse
 {
-    [RequireComponent(typeof(NavMeshAgent))]
+    [RequireComponent(typeof(NavMeshAgent), typeof(AudioSource))]
     public sealed class StalkerAI : MonoBehaviour, IDamageable
     {
         public enum StalkerState
@@ -59,6 +59,9 @@ namespace TheLightHouse
         private NavMeshAgent agent;
         [SerializeField] private StormSettings stormSettings;
         [SerializeField] private AudioClip stairFootsteps;
+        [SerializeField] private AudioClip dragFootstepClip;
+        private AudioSource audioSource;
+        private float nextDragStepTime;
         private bool stairWarned;
         private float resumeClimbAt;
         private bool playerCranking;
@@ -103,8 +106,42 @@ namespace TheLightHouse
         {
             agent = GetComponent<NavMeshAgent>();
             herding = GetComponent<CraneHerding>();
-            baseSpeed = agent.speed;
+            baseSpeed = agent ? agent.speed : 3.5f;
             if (!player) player = Object.FindAnyObjectByType<PlayerHealthState>();
+
+            audioSource = GetComponent<AudioSource>();
+            if (!audioSource) audioSource = gameObject.AddComponent<AudioSource>();
+            audioSource.spatialBlend = 1.0f;
+            audioSource.minDistance = 2.0f;
+            audioSource.maxDistance = 25.0f;
+            audioSource.rolloffMode = AudioRolloffMode.Logarithmic;
+            audioSource.playOnAwake = false;
+
+            if (!dragFootstepClip)
+            {
+                dragFootstepClip = Resources.Load<AudioClip>("Audio/CRANE_DRAG_STEP")
+                                ?? Resources.Load<AudioClip>("CRANE_DRAG_STEP")
+                                ?? Resources.Load<AudioClip>("Audio/Coat_Rustle_WetWool");
+#if UNITY_EDITOR
+                if (!dragFootstepClip)
+                    dragFootstepClip = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/_Project/Audio/Voice/ThomasCrane/CRANE_DRAG_STEP.wav");
+#endif
+            }
+
+            if (!lullabyHum)
+            {
+                lullabyHum = Resources.Load<AudioClip>("Audio/CRANE_HUM_01")
+                          ?? Resources.Load<AudioClip>("Audio/Voice_Crane_CellarShanty");
+#if UNITY_EDITOR
+                if (!lullabyHum)
+                    lullabyHum = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/_Project/Audio/Voice/ThomasCrane/CRANE_HUM_01.wav");
+#endif
+            }
+
+            if (!stairFootsteps)
+            {
+                stairFootsteps = dragFootstepClip;
+            }
         }
 
         private void OnEnable()
@@ -146,6 +183,16 @@ namespace TheLightHouse
         {
             if(stormComplete)return;
             CheckVisualLightDetection();
+
+            // 3D dragging footsteps while moving
+            if (agent && agent.isOnNavMesh && agent.velocity.sqrMagnitude > 0.08f && Time.time >= nextDragStepTime)
+            {
+                nextDragStepTime = Time.time + (agent.speed > 2.2f ? 0.8f : 1.25f);
+                if (dragFootstepClip && audioSource)
+                {
+                    audioSource.PlayOneShot(dragFootstepClip, 0.65f);
+                }
+            }
             if(postRevealMode&&currentState==StalkerState.Retreat&&Time.time>=retreatUntil){ResetPatrol();return;}
             if(postRevealMode&&player&&!hummed&&Vector3.Distance(transform.position,player.transform.position)<= (actFourSettings?actFourSettings.lullabyRange:9f))
             {
@@ -249,7 +296,8 @@ namespace TheLightHouse
             ChangeState(actTwo && eventData.Source == (player ? player.gameObject : null) && !playerHidden
                 ? StalkerState.Hunt : StalkerState.Investigate);
 
-            if (agent.isOnNavMesh)
+            agent ??= GetComponent<NavMeshAgent>();
+            if (agent && agent.isOnNavMesh)
             {
                 reportedMissingNavMesh = false;
                 agent.isStopped = false;

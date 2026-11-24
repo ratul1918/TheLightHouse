@@ -17,10 +17,10 @@ MonoBehaviour:
   text: (low, wet baritone humming 'Leave Her, Johnny' - verse phrase)
   actingDirection: Mournful, muffled through wet coat
   context: Cellar and corridor roaming
-  clip: {fileID: 0}
+  clip: {fileID: 8300000, guid: 9282a02e8f7344e2db14bf3b8ab6a8e6, type: 3}
   audioType: 3
   spatialMode: 1
   priority: 50
   interruptible: 1
   subtitleOverrideDuration: 4.5
-  isPlaceholder: 1
+  isPlaceholder: 0

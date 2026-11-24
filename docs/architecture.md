@@ -95,3 +95,5 @@ page IDs, checkpoint and flags. Direct act scenes retain their existing isolated
 
 `TheLightHouse/Build Full Game Scenes` rebuilds MainMenu plus Acts 1–5 and places them in Build Settings in that
 order. MainMenu owns Start/Continue/options; its persistent ActFlow/Save/Debug object survives scene loads.
+Continue loads the local slot first and waits briefly for cloud reconciliation. If that wait expires,
+Continue uses the local load result and ignores the late cloud response so it cannot change the active save.

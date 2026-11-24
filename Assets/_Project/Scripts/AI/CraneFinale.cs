@@ -12,7 +12,27 @@ namespace TheLightHouse
         [SerializeField] Transform player;
         [SerializeField] AudioClip lullabyHum;
         NavMeshAgent agent;AudioSource source;bool active;float nextAction,stutterUntil;int point,door;
-        void Awake(){agent=GetComponent<NavMeshAgent>();source=GetComponent<AudioSource>();}
+        void Awake()
+        {
+            agent = GetComponent<NavMeshAgent>();
+            source = GetComponent<AudioSource>();
+            if (source)
+            {
+                source.spatialBlend = 1f;
+                source.minDistance = 3f;
+                source.maxDistance = 30f;
+                source.rolloffMode = AudioRolloffMode.Logarithmic;
+            }
+            if (!lullabyHum)
+            {
+                lullabyHum = Resources.Load<AudioClip>("Audio/CRANE_HUM_04")
+                          ?? Resources.Load<AudioClip>("Audio/Voice_Crane_CellarShanty");
+#if UNITY_EDITOR
+                if (!lullabyHum)
+                    lullabyHum = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/_Project/Audio/Voice/ThomasCrane/CRANE_HUM_04.wav");
+#endif
+            }
+        }
         void OnEnable(){GameEvents.StoryBeatTriggered+=Beat;GameEvents.LampStateChanged+=Lamp;}
         void OnDisable(){GameEvents.StoryBeatTriggered-=Beat;GameEvents.LampStateChanged-=Lamp;}
         void Beat(StoryBeatTriggeredEvent e){if(e.Id=="A5-B02")Activate();if(e.Id=="A5-B04")active=false;}

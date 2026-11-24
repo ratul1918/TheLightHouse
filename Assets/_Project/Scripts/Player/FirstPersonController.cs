@@ -62,12 +62,22 @@ namespace TheLightHouse
         private float verticalVelocity;
         private float pitch;
         private float lookSensitivityMultiplier=1f;
+        private bool invertY;
         private FirstPersonArms arms;
         public float MoveSpeedMultiplier { get; set; } = 1f;
+        public float LookSensitivityMultiplier => lookSensitivityMultiplier;
+        public bool InvertY => invertY;
         public FirstPersonArms Arms => arms;
         public FlashlightController Flashlight => flashlight;
         public FPVFlashlightHandsController FpvHands => GetComponentInChildren<FPVFlashlightHandsController>();
-        public void ApplyOptions(float sensitivityMultiplier,bool disableBobAndFov){lookSensitivityMultiplier=Mathf.Max(.01f,sensitivityMultiplier);settings.disableBobAndFov=disableBobAndFov;}
+        public void ApplyOptions(float sensitivityMultiplier,bool disableBobAndFov,bool invert=false)
+        {
+            lookSensitivityMultiplier=Mathf.Max(.01f,sensitivityMultiplier);
+            if (!settings) settings = Resources.Load<PlayerMovementSettings>("PlayerMovementSettings");
+            if (!settings) settings = ScriptableObject.CreateInstance<PlayerMovementSettings>();
+            settings.disableBobAndFov=disableBobAndFov;
+            invertY=invert;
+        }
         public bool MovementEnabled
         {
             get => movementEnabled;
@@ -109,6 +119,20 @@ namespace TheLightHouse
             arms = GetComponentInChildren<FirstPersonArms>();
             flashlight = EnsureFlashlight();
             ResolveActions();
+        }
+
+        private void Start()
+        {
+            var settingsMgr = GameSettingsManager.Instance;
+            if (settingsMgr != null && settingsMgr.CurrentOptions != null)
+            {
+                var opt = settingsMgr.CurrentOptions;
+                ApplyOptions(opt.sensitivity, opt.disableBobAndFov || !opt.cameraBob || opt.motionSicknessReduction, opt.invertY);
+            }
+            if (inputActions != null)
+            {
+                InputRebindManager.LoadOverrides(inputActions);
+            }
         }
 
         private FlashlightController EnsureFlashlight()
@@ -204,7 +228,8 @@ namespace TheLightHouse
         private void UpdateLook()
         {
             Vector2 lookInput = lookLocked ? Vector2.zero : lookAction.ReadValue<Vector2>() * settings.lookSensitivity * lookSensitivityMultiplier;
-            pitch = Mathf.Clamp(pitch - lookInput.y, settings.minimumPitch, settings.maximumPitch);
+            float yDelta = invertY ? lookInput.y : -lookInput.y;
+            pitch = Mathf.Clamp(pitch + yDelta, settings.minimumPitch, settings.maximumPitch);
             if (peekPitchLimit > 0f) pitch = Mathf.Clamp(pitch, -peekPitchLimit, peekPitchLimit);
             if (peekYawLimit > 0f)
             {

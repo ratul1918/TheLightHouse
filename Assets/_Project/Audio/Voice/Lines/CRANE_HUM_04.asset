@@ -17,10 +17,10 @@ MonoBehaviour:
   text: (Crane hums, steady now)
   actingDirection: Clear, steady, protective focus
   context: Finale courtyard barrier defense
-  clip: {fileID: 0}
+  clip: {fileID: 8300000, guid: e6b7a5fd378c847cc8e0f3f7723c7c54, type: 3}
   audioType: 3
   spatialMode: 1
   priority: 50
   interruptible: 1
   subtitleOverrideDuration: 4.5
-  isPlaceholder: 1
+  isPlaceholder: 0

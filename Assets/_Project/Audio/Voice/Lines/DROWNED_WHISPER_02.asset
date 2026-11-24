@@ -17,10 +17,10 @@ MonoBehaviour:
   text: (spectral wet sigh from the surf)
   actingDirection: Shifting breeze across cold spray
   context: Tidal approach alert
-  clip: {fileID: 0}
+  clip: {fileID: 8300000, guid: df67a11fa002d4a8791f6f8014639d24, type: 3}
   audioType: 5
   spatialMode: 1
   priority: 50
   interruptible: 1
   subtitleOverrideDuration: 3.5
-  isPlaceholder: 1
+  isPlaceholder: 0

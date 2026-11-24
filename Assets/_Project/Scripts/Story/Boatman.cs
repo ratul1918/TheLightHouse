@@ -202,6 +202,9 @@ namespace TheLightHouse
 
         private static AudioClip LoadAudio(string relativePath)
         {
+            string name = System.IO.Path.GetFileNameWithoutExtension(relativePath);
+            var res = Resources.Load<AudioClip>($"Audio/{name}") ?? Resources.Load<AudioClip>(name);
+            if (res != null) return res;
 #if UNITY_EDITOR
             return UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>($"Assets/_Project/Audio/{relativePath}");
 #else

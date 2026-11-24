@@ -17,10 +17,10 @@ MonoBehaviour:
   text: (heavy sodden oilskin rustle and labored breath)
   actingDirection: Water-logged boots dragging over stone
   context: Stalker footstep approach
-  clip: {fileID: 0}
+  clip: {fileID: 8300000, guid: 84ad572af244b4bcfbce46ac1e71d155, type: 3}
   audioType: 6
   spatialMode: 1
   priority: 0
   interruptible: 1
   subtitleOverrideDuration: 2.5
-  isPlaceholder: 1
+  isPlaceholder: 0

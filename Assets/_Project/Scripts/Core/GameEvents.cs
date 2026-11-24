@@ -208,7 +208,7 @@ namespace TheLightHouse
     public static class GameEvents
     {
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        private static void ResetSessionEvents()
+        public static void ResetSessionEvents()
         {
             NoiseHeard = null;
             Thunder = null;

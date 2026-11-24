@@ -118,8 +118,9 @@ namespace TheLightHouse
                 controller.SetLookLocked(true);
             }
             GameEvents.RaisePlayerDeath();
-            var deathUI = FindAnyObjectByType<DeathScreenUI>();
+            var deathUI = DeathScreenUI.EnsureInstance();
             if (deathUI) deathUI.ShowDeath();
+            else Respawn();
         }
 
         private void State(GameStateChangedEvent e)

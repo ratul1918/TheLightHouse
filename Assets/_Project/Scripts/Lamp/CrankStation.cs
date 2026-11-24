@@ -13,10 +13,13 @@ namespace TheLightHouse
         [SerializeField, Min(0.1f)] private float noiseInterval = 1f;
 
         private float nextNoiseTime;
+        private float nextEffortAudioTime;
         private bool isCranking;
         [SerializeField] private StormSettings stormSettings;
         [SerializeField] private PlayerStamina stamina;
         [SerializeField] private Transform handle;
+        [SerializeField] private AudioSource audioSource;
+        [SerializeField] private AudioClip effortClip;
         private float speed;
         private float recoveryUntil;
         public float Speed=>speed;
@@ -26,7 +29,18 @@ namespace TheLightHouse
             if(!isCranking)speed=Mathf.MoveTowards(speed,0,stormSettings.crankDeceleration*Time.deltaTime);
             if(handle)handle.Rotate(Vector3.forward,speed*stormSettings.handleDegreesPerSecond*Time.deltaTime);
             if(isCranking)lamp.AddCharge(speed*stormSettings.chargeGain*Time.deltaTime);
-            if(speed>0&&Time.time>=nextNoiseTime){noiseEmitter.Emit(stormSettings.crankMaxNoise*stormSettings.crankNoiseCurve.Evaluate(speed));nextNoiseTime=Time.time+stormSettings.noiseInterval;}
+            if(speed>0&&Time.time>=nextNoiseTime)
+            {
+                noiseEmitter.Emit(stormSettings.crankMaxNoise*stormSettings.crankNoiseCurve.Evaluate(speed));
+                nextNoiseTime=Time.time+stormSettings.noiseInterval;
+                if (speed > 0.25f && Time.time >= nextEffortAudioTime && effortClip)
+                {
+                    nextEffortAudioTime = Time.time + effortClip.length + 0.6f;
+                    if (audioSource)
+                        audioSource.PlayOneShot(effortClip, 0.75f);
+                    GameEvents.RequestDialogue(new DialogueLine("Daniel", "(strained physical exertion grunt)"));
+                }
+            }
         }
 
         public string Prompt => prompt;
@@ -34,7 +48,21 @@ namespace TheLightHouse
 
         private void Awake()
         {
-            noiseEmitter ??= GetComponent<NoiseEmitter>();
+            if (!noiseEmitter)
+                noiseEmitter = GetComponent<NoiseEmitter>();
+            if (!audioSource && !TryGetComponent(out audioSource))
+                audioSource = gameObject.AddComponent<AudioSource>();
+            audioSource.spatialBlend = 0.5f;
+            audioSource.playOnAwake = false;
+            if (!effortClip)
+            {
+                effortClip = Resources.Load<AudioClip>("Audio/REACT_DAN_CRANK_EFFORT")
+                          ?? Resources.Load<AudioClip>("REACT_DAN_CRANK_EFFORT");
+#if UNITY_EDITOR
+                if (!effortClip)
+                    effortClip = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/_Project/Audio/Voice/DanielHale/REACT_DAN_CRANK_EFFORT.wav");
+#endif
+            }
         }
 
         private void OnDisable()

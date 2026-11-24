@@ -17,10 +17,10 @@ MonoBehaviour:
   text: (cold tidal murmuring in six voices)
   actingDirection: Overlapping wet whispers, choral murmur
   context: Shallows figures in surf
-  clip: {fileID: 0}
+  clip: {fileID: 8300000, guid: 1e7beb97da6134c8d990f1f0d050ef94, type: 3}
   audioType: 5
   spatialMode: 1
   priority: 50
   interruptible: 1
   subtitleOverrideDuration: 4
-  isPlaceholder: 1
+  isPlaceholder: 0

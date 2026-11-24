@@ -17,10 +17,10 @@ MonoBehaviour:
   text: Time for us to leave her...
   actingDirection: Rasping, wet baritone voice, bittersweet peace
   context: Crane sinks into the dawn surf
-  clip: {fileID: 0}
+  clip: {fileID: 8300000, guid: 0fc43b463653d49429cd0d4ef76ae181, type: 3}
   audioType: 4
   spatialMode: 1
   priority: 100
   interruptible: 0
   subtitleOverrideDuration: 0
-  isPlaceholder: 1
+  isPlaceholder: 0
